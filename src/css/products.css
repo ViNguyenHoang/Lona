@@ -1,0 +1,139 @@
+/* ── Unit chip selector ───────────────────────────────────────────── */
+.unit-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.unit-chip {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+  background: transparent;
+  font-family: var(--font);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.unit-chip:active {
+  transform: scale(0.96);
+}
+
+.unit-chip--active {
+  background: var(--em-600);
+  border-color: var(--em-600);
+  color: #fff;
+  font-weight: 700;
+}
+
+/* ── Category tree ────────────────────────────────────────────────── */
+.category-tree {
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 6px;
+  background: var(--bg-2, #fafafa);
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+:root {
+  --clr-green-soft: rgba(34, 197, 94, 0.08);
+}
+
+/* ── Image buttons ────────────────────────────────────────────────── */
+.img-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: 1.5px dashed var(--border);
+  background: transparent;
+  font-family: var(--font);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-2);
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+
+.img-btn:hover {
+  border-color: var(--clr-green);
+  background: var(--clr-green-soft);
+  color: var(--clr-green);
+}
+
+.img-btn:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* ── Alias tags ───────────────────────────────────────────────────── */
+.alias-tag {
+  display: inline-block;
+  font-size: 0.7rem;
+  padding: 2px 7px;
+  border-radius: 20px;
+  background: var(--clr-green-soft);
+  color: var(--clr-green, #16a34a);
+  font-family: var(--font);
+  font-weight: 600;
+  margin-right: 4px;
+  margin-top: 4px;
+}
+
+/* ── Card actions — add edit button ──────────────────────────────── */
+.card__actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.btn--edit {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  background: transparent;
+  font-family: var(--font);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn--edit:hover {
+  border-color: #3b82f6;
+  color: #3b82f6;
+  background: rgba(59, 130, 246, 0.06);
+}
+
+.btn--delete {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  background: transparent;
+  font-family: var(--font);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn--delete:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.06);
+}

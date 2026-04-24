@@ -1,0 +1,256 @@
+/* ── Tree container ── */
+.cat-tree {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ── Root node card (level 1) ── */
+.cat-node {
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.cat-node__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 8px 10px 8px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  gap: 6px;
+  min-height: 44px;
+}
+
+.cat-node__children {
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+  padding: 6px 8px 8px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ── Child node (level 2) ── */
+.cat-child {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 6px 7px 10px;
+  border-radius: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-size: 0.8rem;
+  font-weight: 600;
+  gap: 6px;
+  min-height: 38px;
+}
+
+/* ── Shared: left side ── */
+.cat-node__left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.cat-node__name {
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Toggle button ── */
+.cat-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-3);
+  border-radius: 4px;
+  flex-shrink: 0;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+.cat-toggle:hover {
+  background: var(--primary-pale);
+  color: var(--primary);
+}
+
+/* ── Folder icon ── */
+.cat-folder-icon {
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* ── Count badge ── */
+.cat-count {
+  background: var(--primary-pale);
+  color: var(--primary);
+  border-radius: 50px;
+  padding: 1px 7px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+/* ── Dot indicator (level 2) ── */
+.cat-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--text-3);
+  flex-shrink: 0;
+}
+
+/* ── Action buttons ── */
+.cat-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.cat-action-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-3);
+  transition:
+    background 0.15s,
+    color 0.15s;
+  min-width: 30px;
+  min-height: 30px;
+}
+.cat-action-btn--edit:hover {
+  background: var(--primary-pale);
+  color: var(--primary);
+}
+.cat-action-btn--delete:hover {
+  background: #fee2e2;
+  color: var(--danger);
+}
+
+/* ═══════════════════════════════════════════════════════
+   ROOT PICKER — Custom parent selector (root only)
+   ═══════════════════════════════════════════════════════ */
+
+.tree-picker {
+  position: relative;
+}
+
+.tree-picker__trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: #fafafa;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font);
+  font-size: 0.9rem;
+  color: var(--text);
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+  text-align: left;
+}
+.tree-picker__trigger.open,
+.tree-picker__trigger:focus {
+  border-color: var(--primary);
+  background: #fff;
+  outline: none;
+}
+
+.tree-picker__label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 600;
+}
+
+.tree-picker__arrow {
+  flex-shrink: 0;
+  color: var(--text-3);
+  transition: transform 0.2s;
+}
+.tree-picker__arrow.rotated {
+  transform: rotate(90deg);
+}
+
+.tree-picker__dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border: 1.5px solid var(--primary);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+  z-index: 500;
+  max-height: 220px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.tree-picker__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s;
+}
+.tree-picker__item:last-child {
+  border-bottom: none;
+}
+.tree-picker__item:hover {
+  background: var(--primary-bg);
+}
+.tree-picker__item.selected {
+  background: var(--primary-pale);
+  color: var(--primary-dark);
+  font-weight: 700;
+}
+.tree-picker__item--root {
+  color: var(--text-3);
+  font-size: 0.8rem;
+}
+.tree-picker__item--root.selected {
+  color: var(--primary);
+}
+
+.tree-picker__check {
+  color: var(--primary);
+  flex-shrink: 0;
+  margin-left: auto;
+}
