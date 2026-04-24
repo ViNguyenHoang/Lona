@@ -12,6 +12,7 @@ import {
   Divider,
   ScrollArea,
   Collapse,
+  Select,
 } from '@mantine/core'
 import { useForm } from '@mantine/form'
 import {
@@ -53,7 +54,7 @@ function TreeNode({
 }: TreeNodeProps) {
   const children = allCategories.filter((c) => c.parent_id === category.id)
   const hasChildren = children.length > 0
-  const [open, setOpen] = useState(depth === 0 ? true : false)
+  const [open, setOpen] = useState(false)
   const isSelected = selected.includes(category.id)
 
   return (
@@ -198,7 +199,6 @@ export default function ProductForm({
     validate: {
       name: (value) =>
         value.trim().length === 0 ? 'Tên sản phẩm là bắt buộc' : null,
-      unit_id: (value) => (!value ? 'Vui lòng chọn đơn vị tính' : null),
       price: (value) =>
         value === '' || value === undefined ? 'Giá là bắt buộc' : null,
     },
@@ -399,42 +399,21 @@ export default function ProductForm({
 
             <Divider />
 
-            {/* ── Unit chips ── */}
-            <div>
-              <Text fz="xs" fw={700} c="var(--text-2)" mb={8} ff="var(--font)">
-                Đơn vị tính *
-              </Text>
-              {units.length === 0 ? (
-                <Text fz="xs" c="dimmed" ff="var(--font)">
-                  Chưa có đơn vị — hãy thêm trong mục Đơn Vị Tính
-                </Text>
-              ) : (
-                <div className="unit-grid">
-                  {units.map((u) => (
-                    <button
-                      key={u.id}
-                      type="button"
-                      className={`unit-chip${
-                        form.values.unit_id === u.id ? ' unit-chip--active' : ''
-                      }`}
-                      onClick={() =>
-                        form.setFieldValue(
-                          'unit_id',
-                          form.values.unit_id === u.id ? '' : u.id,
-                        )
-                      }
-                    >
-                      {u.name}
-                    </button>
-                  ))}
-                </div>
-              )}
-              {form.errors.unit_id && (
-                <Text fz="xs" c="red" mt={4} ff="var(--font)">
-                  {form.errors.unit_id}
-                </Text>
-              )}
-            </div>
+            {/* ── Unit ── */}
+            <Select
+              label="Đơn vị tính"
+              placeholder="Chọn đơn vị…"
+              data={units.map((u) => ({ value: u.id, label: u.name }))}
+              value={form.values.unit_id || null}
+              onChange={(val) => form.setFieldValue('unit_id', val ?? '')}
+              error={form.errors.unit_id}
+              searchable
+              nothingFoundMessage="Không tìm thấy"
+              styles={{
+                ...IS,
+                option: { fontFamily: 'var(--font)', fontSize: '0.9rem' },
+              }}
+            />
 
             {/* ── Price ── */}
             <NumberInput

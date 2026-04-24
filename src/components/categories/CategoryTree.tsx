@@ -53,7 +53,7 @@ function ChildNode({ node, onDelete, onEdit }: NodeProps) {
 // ── Root (level 1) ────────────────────────────────────────────────────────────
 
 function RootNode({ node, onDelete, onEdit }: NodeProps) {
-  const [open, setOpen] = useState(true)
+  const [open, setOpen] = useState(false)
   const hasChildren = (node.children?.length ?? 0) > 0
 
   return (
