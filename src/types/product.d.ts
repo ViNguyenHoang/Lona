@@ -6,7 +6,8 @@ interface Product {
   image_url: string | null
   image_public_id: string | null
   created_at: string
-  units: Unit | null
+  updated_at: string
+  unit: Unit | null
   product_categories: { category_id: string }[]
   product_aliases: ProductAlias[]
 }

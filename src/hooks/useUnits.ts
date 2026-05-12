@@ -16,7 +16,7 @@ export function useUnits() {
       const { data, error } = await supabase
         .from('units')
         .select('*')
-        .order('name')
+        .order('created_at', { ascending: false })
 
       if (error) throw error
       setUnits(data as Unit[])
@@ -36,7 +36,11 @@ export function useUnits() {
 
     if (error) throw error
     const newUnit = data as Unit
-    setUnits((prev) => [...prev, newUnit].sort((a, b) => a.name.localeCompare(b.name, 'vi')))
+    setUnits((prev) =>
+      [...prev, newUnit].sort((a, b) =>
+        b.created_at.localeCompare(a.created_at),
+      ),
+    )
     return newUnit
   }
 
@@ -51,7 +55,9 @@ export function useUnits() {
     if (error) throw error
     const updated = data as Unit
     setUnits((prev) =>
-      prev.map((u) => (u.id === id ? updated : u)).sort((a, b) => a.name.localeCompare(b.name, 'vi')),
+      prev
+        .map((u) => (u.id === id ? updated : u))
+        .sort((a, b) => b.created_at.localeCompare(a.created_at)),
     )
     return updated
   }

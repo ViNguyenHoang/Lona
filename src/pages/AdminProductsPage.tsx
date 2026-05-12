@@ -8,24 +8,59 @@ import {
   Loader,
   Center,
 } from '@mantine/core'
-import { IconPackage, IconSearch, IconPlus } from '@tabler/icons-react'
+import {
+  IconPackage,
+  IconSearch,
+  IconPlus,
+  IconCategory,
+  IconX,
+} from '@tabler/icons-react'
 import { notifications } from '@mantine/notifications'
 import { useDisclosure } from '@mantine/hooks'
 import ProductCard from '../components/search/ProductCard'
 import ProductForm from '../components/products/ProductForm'
+import ProductsTable from '../components/products/ProductsTable'
+import ImportExportMenu from '../components/products/ImportExportMenu'
+import {
+  ProductFilterButton,
+  ProductFilterPanel,
+} from '../components/products/ProductFilters'
+import { SortPriceButton } from '../components/products/SortPriceButton'
+import { CategoryDrawer } from '../components/products/CategoryDrawer'
+import {
+  DEFAULT_FILTERS,
+  applyCategoryFilter,
+  applyProductFilters,
+  applySortOrder,
+  type ProductFilterState,
+  type SortOrder,
+} from '../lib/productFilters'
 import { useProducts } from '../hooks/useProducts'
 import { useCategories } from '../hooks/useCategories'
 import { useUnits } from '../hooks/useUnits'
 import LayoutAdmin from '../components/shared/LayoutAdmin'
 
 export default function AdminProductsPage() {
-  const { products, loading, addProduct, updateProduct, deleteProduct } =
-    useProducts()
+  const {
+    products,
+    loading,
+    addProduct,
+    updateProduct,
+    deleteProduct,
+    deleteAllProducts,
+    bulkAddProducts,
+  } = useProducts()
   const { categories } = useCategories()
   const { units } = useUnits()
 
   const [query, setQuery] = useState('')
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [filters, setFilters] = useState<ProductFilterState>(DEFAULT_FILTERS)
+  const [filtersOpen, { toggle: toggleFilters }] = useDisclosure(false)
+  const [sort, setSort] = useState<SortOrder>('none')
+  const [categoryId, setCategoryId] = useState<string | null>(null)
+  const [catDrawerOpen, { open: openCatDrawer, close: closeCatDrawer }] =
+    useDisclosure(false)
 
   const [modalForm, { open: openModalForm, close: closeModalForm }] =
     useDisclosure(false)
@@ -33,9 +68,16 @@ export default function AdminProductsPage() {
     useDisclosure(false)
   const [isDeleting, setDeleting] = useState(false)
 
+  const byCategory = applyCategoryFilter(products, categoryId)
+  const byFilters = applyProductFilters(byCategory, filters)
+  const sorted = applySortOrder(byFilters, sort)
   const filtered = query.trim()
-    ? products.filter((p) => p.name.toLowerCase().includes(query.toLowerCase()))
-    : products
+    ? sorted.filter((p) => p.name.toLowerCase().includes(query.toLowerCase()))
+    : sorted
+
+  const activeCategory = categoryId
+    ? categories.find((c) => c.id === categoryId)
+    : null
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
@@ -129,6 +171,19 @@ export default function AdminProductsPage() {
           }}
         />
         <button
+          type="button"
+          className={`cat-trigger${categoryId ? ' cat-trigger--active' : ''}`}
+          onClick={openCatDrawer}
+          aria-label="Danh mục"
+        >
+          <IconCategory size={20} />
+        </button>
+        <ImportExportMenu
+          products={products}
+          onBulkAdd={bulkAddProducts}
+          onDeleteAll={deleteAllProducts}
+        />
+        <button
           className="add-btn"
           onClick={onOpenAdd}
           aria-label="Thêm sản phẩm"
@@ -136,6 +191,50 @@ export default function AdminProductsPage() {
           <IconPlus size={20} />
         </button>
       </Group>
+
+      <div className="toolbar-pills">
+        <SortPriceButton value={sort} onChange={setSort} />
+        <ProductFilterButton
+          filters={filters}
+          open={filtersOpen}
+          onToggle={toggleFilters}
+        />
+      </div>
+
+      <ProductFilterPanel
+        open={filtersOpen}
+        filters={filters}
+        onChange={setFilters}
+        units={units}
+      />
+
+      {activeCategory && (
+        <div>
+          <span className="cat-chip">
+            Danh mục: {activeCategory.name}
+            <button
+              type="button"
+              className="cat-chip__close"
+              onClick={() => setCategoryId(null)}
+              aria-label="Bỏ chọn danh mục"
+            >
+              <IconX size={11} />
+            </button>
+          </span>
+        </div>
+      )}
+
+      {!loading && (
+        <div className="product-stats">
+          <span>Tổng sản phẩm:</span>
+          <span className="stat-value">{products.length}</span>
+          {filtered.length !== products.length && (
+            <span className="stat-filtered">
+              · Hiển thị: {filtered.length}
+            </span>
+          )}
+        </div>
+      )}
 
       {loading ? (
         <Center py={40}>
@@ -150,18 +249,38 @@ export default function AdminProductsPage() {
           </p>
         </div>
       ) : (
-        <div className="product-grid">
-          {filtered.map((p) => (
-            <ProductCard
-              key={p.id}
-              product={p}
-              mode="admin"
+        <>
+          <div className="admin-grid-wrap">
+            <div className="product-grid">
+              {filtered.map((p) => (
+                <ProductCard
+                  key={p.id}
+                  product={p}
+                  mode="admin"
+                  onEdit={onOpenEdit}
+                  onDelete={onOpenDelete}
+                />
+              ))}
+            </div>
+          </div>
+          <div className="admin-table-wrap">
+            <ProductsTable
+              products={filtered}
+              categories={categories}
               onEdit={onOpenEdit}
               onDelete={onOpenDelete}
             />
-          ))}
-        </div>
+          </div>
+        </>
       )}
+
+      <CategoryDrawer
+        open={catDrawerOpen}
+        onClose={closeCatDrawer}
+        categories={categories}
+        selectedId={categoryId}
+        onSelect={setCategoryId}
+      />
 
       {/* Add / Edit form */}
       <ProductForm

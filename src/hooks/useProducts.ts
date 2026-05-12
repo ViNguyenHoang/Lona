@@ -10,7 +10,8 @@ interface ProductRow {
   image_url: string | null
   image_public_id: string | null
   created_at: string
-  units: { id: string; name: string }[] | null
+  updated_at: string
+  units: Unit | null
   product_categories: { category_id: string }[]
   product_aliases: { id: string; alias: string }[]
 }
@@ -18,7 +19,7 @@ interface ProductRow {
 function normalise(row: ProductRow): Product {
   return {
     ...row,
-    units: row.units?.[0] ?? null,
+    unit: row.units ?? null,
     product_aliases: row.product_aliases.map((a) => ({
       ...a,
       product_id: row.id,
@@ -27,33 +28,46 @@ function normalise(row: ProductRow): Product {
 }
 
 const PRODUCT_SELECT = `
-  id, name, unit_id, price, image_url, image_public_id, created_at,
-  units ( id, name ),
+  id, name, unit_id, price, image_url, image_public_id, created_at, updated_at,
+  units ( id, name, created_at, updated_at ),
   product_categories ( category_id ),
   product_aliases ( id, alias )
 `
 
+interface UseProductsOptions {
+  /** Chỉ lấy sản phẩm có price > value. Bỏ qua nếu không truyền. */
+  priceGreaterThan?: number
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function useProducts() {
+export function useProducts(options: UseProductsOptions = {}) {
+  const { priceGreaterThan } = options
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     fetchProducts()
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [priceGreaterThan])
 
   async function fetchProducts(): Promise<void> {
     try {
       setLoading(true)
-      const { data, error: fetchError } = await supabase
+      let query = supabase
         .from('products')
         .select(PRODUCT_SELECT)
-        .order('name')
+        .order('updated_at', { ascending: false })
+
+      if (priceGreaterThan !== undefined) {
+        query = query.gt('price', priceGreaterThan)
+      }
+
+      const { data, error: fetchError } = await query
 
       if (fetchError) throw fetchError
-      setProducts((data as ProductRow[]).map(normalise))
+      setProducts((data as unknown as ProductRow[]).map(normalise))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Lỗi không xác định')
     } finally {
@@ -100,7 +114,7 @@ export function useProducts() {
       .select(PRODUCT_SELECT)
       .eq('id', newId)
       .single()
-    return normalise(fresh as ProductRow)
+    return normalise(fresh as unknown as ProductRow)
   }
 
   async function updateProduct(
@@ -155,6 +169,74 @@ export function useProducts() {
     await fetchProducts()
   }
 
+  async function bulkAddProducts(
+    rows: {
+      name: string
+      unit_id: string | null
+      price: number
+      image_url: string | null
+      image_public_id: string | null
+      categoryIds: string[]
+      aliases: string[]
+    }[],
+  ): Promise<{ inserted: number }> {
+    if (rows.length === 0) return { inserted: 0 }
+
+    const { data, error: pErr } = await supabase
+      .from('products')
+      .insert(
+        rows.map((r) => ({
+          name: r.name,
+          unit_id: r.unit_id,
+          price: r.price,
+          image_url: r.image_url,
+          image_public_id: r.image_public_id,
+        })),
+      )
+      .select('id')
+    if (pErr) throw pErr
+
+    const ids = (data as { id: string }[]).map((d) => d.id)
+
+    const categoryRows = rows.flatMap((r, i) =>
+      r.categoryIds.map((cid) => ({
+        product_id: ids[i],
+        category_id: cid,
+      })),
+    )
+    if (categoryRows.length > 0) {
+      const { error: cErr } = await supabase
+        .from('product_categories')
+        .insert(categoryRows)
+      if (cErr) throw cErr
+    }
+
+    const aliasRows = rows.flatMap((r, i) =>
+      r.aliases.map((a) => ({ product_id: ids[i], alias: a })),
+    )
+    if (aliasRows.length > 0) {
+      const { error: aErr } = await supabase
+        .from('product_aliases')
+        .insert(aliasRows)
+      if (aErr) throw aErr
+    }
+
+    await fetchProducts()
+    return { inserted: ids.length }
+  }
+
+  async function deleteAllProducts(): Promise<{ deleted: number }> {
+    const { error: dErr } = await supabase
+      .from('products')
+      .delete()
+      .not('id', 'is', null)
+    if (dErr) throw dErr
+
+    const count = products.length
+    setProducts([])
+    return { deleted: count }
+  }
+
   async function deleteProduct(id: string): Promise<void> {
     const product = products.find((p) => p.id === id)
 
@@ -184,6 +266,8 @@ export function useProducts() {
     addProduct,
     updateProduct,
     deleteProduct,
+    deleteAllProducts,
+    bulkAddProducts,
     refetch: fetchProducts,
   }
 }

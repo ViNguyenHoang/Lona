@@ -1,10 +1,20 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { IconCamera, IconUpload, IconX } from '@tabler/icons-react'
+import { Loader } from '@mantine/core'
+import { notifications } from '@mantine/notifications'
+import imageCompression from 'browser-image-compression'
 
 interface ImageUploaderProps {
   existingUrl: string | null // ảnh đã lưu trong DB (khi edit)
   pendingFile: File | null // file mới user vừa chọn, chưa upload
   onFileSelect: (file: File | null) => void
+}
+
+const COMPRESSION_OPTIONS = {
+  maxSizeMB: 0.3,
+  maxWidthOrHeight: 1024,
+  useWebWorker: true,
+  initialQuality: 0.8,
 }
 
 export default function ImageUploader({
@@ -14,15 +24,31 @@ export default function ImageUploader({
 }: ImageUploaderProps) {
   const fileRef = useRef<HTMLInputElement>(null)
   const cameraRef = useRef<HTMLInputElement>(null)
+  const [isCompressing, setIsCompressing] = useState(false)
 
   // Preview: ưu tiên file mới (local blob), fallback về URL đã lưu
   const previewUrl = pendingFile
     ? URL.createObjectURL(pendingFile)
     : existingUrl
 
-  function handleFile(file: File | undefined) {
+  async function handleFile(file: File | undefined) {
     if (!file) return
-    onFileSelect(file) // chỉ lưu vào state, KHÔNG upload
+    setIsCompressing(true)
+    try {
+      const compressed = await imageCompression(file, COMPRESSION_OPTIONS)
+      onFileSelect(compressed)
+    } catch {
+      notifications.show({
+        message: 'Không nén được ảnh, tải lên kích thước gốc',
+        color: 'yellow',
+      })
+      onFileSelect(file)
+    } finally {
+      setIsCompressing(false)
+      // reset input để user có thể chọn lại cùng file
+      if (fileRef.current) fileRef.current.value = ''
+      if (cameraRef.current) cameraRef.current.value = ''
+    }
   }
 
   function handleRemove() {
@@ -69,6 +95,21 @@ export default function ImageUploader({
               <IconX size={12} />
             </button>
           </div>
+        </div>
+      ) : isCompressing ? (
+        <div
+          className="img-uploader"
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 6,
+            pointerEvents: 'none',
+          }}
+        >
+          <Loader size="sm" color="gray" />
+          <p style={{ fontFamily: 'var(--font)' }}>Đang xử lý ảnh...</p>
         </div>
       ) : (
         <div style={{ display: 'flex', gap: 8 }}>

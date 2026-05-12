@@ -1,21 +1,58 @@
 import { useState } from 'react'
-import { TextInput, Loader, Center } from '@mantine/core'
+import { TextInput, Loader, Center, Group } from '@mantine/core'
 import {
   IconBuildingStore,
   IconSearch,
   IconLayoutGrid,
+  IconCategory,
+  IconX,
 } from '@tabler/icons-react'
+import { useDisclosure } from '@mantine/hooks'
 import Layout from '../components/shared/Layout.js'
 import ProductCard from '../components/search/ProductCard.js'
+import {
+  ProductFilterButton,
+  ProductFilterPanel,
+} from '../components/products/ProductFilters.js'
+import { SortPriceButton } from '../components/products/SortPriceButton.js'
+import { CategoryDrawer } from '../components/products/CategoryDrawer.js'
+import {
+  DEFAULT_FILTERS,
+  applyCategoryFilter,
+  applyProductFilters,
+  applySortOrder,
+  type ProductFilterState,
+  type SortOrder,
+} from '../lib/productFilters.js'
 import { useProducts } from '../hooks/useProducts.js'
+import { useCategories } from '../hooks/useCategories.js'
+import { useUnits } from '../hooks/useUnits.js'
 
 export default function ProductsPage() {
-  const { products, loading } = useProducts()
-  const [query, setQuery] = useState('')
+  const { products, loading } = useProducts({ priceGreaterThan: 0 })
+  const { categories } = useCategories()
+  const { units } = useUnits()
 
+  const [query, setQuery] = useState('')
+  const [filters, setFilters] = useState<ProductFilterState>(DEFAULT_FILTERS)
+  const [filtersOpen, { toggle: toggleFilters }] = useDisclosure(false)
+  const [sort, setSort] = useState<SortOrder>('none')
+  const [categoryId, setCategoryId] = useState<string | null>(null)
+  const [catDrawerOpen, { open: openCatDrawer, close: closeCatDrawer }] =
+    useDisclosure(false)
+
+  const byCategory = applyCategoryFilter(products, categoryId)
+  const byFilters = applyProductFilters(byCategory, filters)
+  const sorted = applySortOrder(byFilters, sort)
   const filtered = query.trim()
-    ? products.filter((p) => p.name.toLowerCase().includes(query.toLowerCase()))
-    : products
+    ? sorted.filter((p) => p.name.toLowerCase().includes(query.toLowerCase()))
+    : sorted
+
+  const activeCategory = categoryId
+    ? categories.find((c) => c.id === categoryId)
+    : null
+
+  console.log(products)
 
   return (
     <Layout
@@ -24,20 +61,65 @@ export default function ProductsPage() {
       icon={IconBuildingStore}
     >
       <div className="products-page">
-        <TextInput
-          placeholder="Tìm tên sản phẩm..."
-          leftSection={<IconSearch size={15} />}
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          mb="md"
-          styles={{
-            input: { fontFamily: 'var(--font)', borderColor: 'var(--border)' },
-          }}
+        <Group gap={8} mb={12}>
+          <TextInput
+            placeholder="Tìm tên sản phẩm..."
+            leftSection={<IconSearch size={15} />}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            style={{ flex: 1 }}
+            styles={{
+              input: {
+                fontFamily: 'var(--font)',
+                borderColor: 'var(--border)',
+              },
+            }}
+          />
+          <button
+            type="button"
+            className={`cat-trigger${categoryId ? ' cat-trigger--active' : ''}`}
+            onClick={openCatDrawer}
+            aria-label="Danh mục"
+          >
+            <IconCategory size={20} />
+          </button>
+        </Group>
+
+        <div className="toolbar-pills">
+          <SortPriceButton value={sort} onChange={setSort} />
+          <ProductFilterButton
+            filters={filters}
+            open={filtersOpen}
+            onToggle={toggleFilters}
+          />
+        </div>
+
+        <ProductFilterPanel
+          open={filtersOpen}
+          filters={filters}
+          onChange={setFilters}
+          units={units}
         />
+
+        {activeCategory && (
+          <div>
+            <span className="cat-chip">
+              Danh mục: {activeCategory.name}
+              <button
+                type="button"
+                className="cat-chip__close"
+                onClick={() => setCategoryId(null)}
+                aria-label="Bỏ chọn danh mục"
+              >
+                <IconX size={11} />
+              </button>
+            </span>
+          </div>
+        )}
 
         <div className="section-title">
           <IconLayoutGrid size={16} />
-          Tất cả sản phẩm
+          {activeCategory ? activeCategory.name : 'Tất cả sản phẩm'}
           <span className="count-badge">{loading ? '…' : filtered.length}</span>
         </div>
 
@@ -58,6 +140,14 @@ export default function ProductsPage() {
             ))}
           </div>
         )}
+
+        <CategoryDrawer
+          open={catDrawerOpen}
+          onClose={closeCatDrawer}
+          categories={categories}
+          selectedId={categoryId}
+          onSelect={setCategoryId}
+        />
       </div>
     </Layout>
   )

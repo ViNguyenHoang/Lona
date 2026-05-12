@@ -20,7 +20,7 @@ export function useCategories() {
       const { data, error } = await supabase
         .from('categories')
         .select('*')
-        .order('name')
+        .order('created_at', { ascending: true })
 
       if (error) throw error
       setCategories(data as Category[])
@@ -43,7 +43,11 @@ export function useCategories() {
 
     if (error) throw error
     const newCategory = data as Category
-    setCategories((prev) => [...prev, newCategory])
+    setCategories((prev) =>
+      [...prev, newCategory].sort((a, b) =>
+        a.created_at.localeCompare(b.created_at),
+      ),
+    )
     return newCategory
   }
 
@@ -104,7 +108,6 @@ export function useCategories() {
     return flat
       .filter((c) => c.parent_id === null)
       .map((c) => ({ value: c.id, label: c.name }))
-      .sort((a, b) => a.label.localeCompare(b.label, 'vi'))
   }
 
   return {
