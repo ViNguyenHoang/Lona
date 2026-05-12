@@ -5,6 +5,7 @@ import { Notifications } from '@mantine/notifications'
 import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.tsx'
+import { AuthProvider } from './contexts/AuthContext'
 
 import '@mantine/core/styles.css'
 import '@mantine/notifications/styles.css'
@@ -15,7 +16,9 @@ createRoot(document.getElementById('root')!).render(
     <BrowserRouter>
       <MantineProvider forceColorScheme="light">
         <Notifications position="bottom-center" />
-        <App />
+        <AuthProvider>
+          <App />
+        </AuthProvider>
       </MantineProvider>
     </BrowserRouter>
   </StrictMode>,

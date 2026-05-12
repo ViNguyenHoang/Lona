@@ -1,6 +1,14 @@
 import { useState } from 'react'
-import { Group, Text, Loader, Center, Modal, Button } from '@mantine/core'
-import { IconCategory2, IconPlus } from '@tabler/icons-react'
+import {
+  Group,
+  Text,
+  Loader,
+  Center,
+  Modal,
+  Button,
+  TextInput,
+} from '@mantine/core'
+import { IconCategory2, IconPlus, IconSearch, IconFolder } from '@tabler/icons-react'
 import { notifications } from '@mantine/notifications'
 import CategoryTree from '../components/categories/CategoryTree'
 import CategoryForm from '../components/categories/CategoryForm'
@@ -10,6 +18,7 @@ import LayoutAdmin from '../components/shared/LayoutAdmin'
 
 export default function AdminCategoriesPage() {
   const {
+    categories,
     tree,
     selectOptions,
     loading,
@@ -18,9 +27,30 @@ export default function AdminCategoriesPage() {
     deleteCategory,
   } = useCategories()
 
+  const [query, setQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(
     null,
   )
+
+  const q = query.trim().toLowerCase()
+  const filteredTree = q
+    ? tree
+        .map((root) => {
+          const rootMatch = root.name.toLowerCase().includes(q)
+          if (rootMatch) return root
+          const matchingChildren = root.children.filter((c) =>
+            c.name.toLowerCase().includes(q),
+          )
+          if (matchingChildren.length > 0)
+            return { ...root, children: matchingChildren }
+          return null
+        })
+        .filter((n): n is (typeof tree)[number] => n !== null)
+    : tree
+
+  const filteredCount = q
+    ? categories.filter((c) => c.name.toLowerCase().includes(q)).length
+    : categories.length
 
   const [modalForm, { open: openModalForm, close: closeModalForm }] =
     useDisclosure(false)
@@ -124,10 +154,20 @@ export default function AdminCategoriesPage() {
       subtitle="Quản lý danh mục sản phẩm"
       icon={IconCategory2}
     >
-      <Group justify="space-between" mb={12}>
-        <Text fw={800} fz="sm" ff="var(--font)">
-          Cây danh mục
-        </Text>
+      <Group gap={8} mb={12}>
+        <TextInput
+          placeholder="Tìm danh mục..."
+          leftSection={<IconSearch size={15} />}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          style={{ flex: 1 }}
+          styles={{
+            input: {
+              fontFamily: 'var(--font)',
+              borderColor: 'var(--border)',
+            },
+          }}
+        />
         <button
           className="add-btn"
           onClick={onOpenAdd}
@@ -137,12 +177,34 @@ export default function AdminCategoriesPage() {
         </button>
       </Group>
 
+      {!loading && (
+        <div className="product-stats">
+          <span>Tổng danh mục:</span>
+          <span className="stat-value">{categories.length}</span>
+          {filteredCount !== categories.length && (
+            <span className="stat-filtered">
+              · Hiển thị: {filteredCount}
+            </span>
+          )}
+        </div>
+      )}
+
       {loading ? (
         <Center py={40}>
-          <Loader color="green" size="sm" />
+          <Loader color="teal" size="sm" />
         </Center>
+      ) : q && filteredTree.length === 0 ? (
+        <div className="empty-state">
+          <IconFolder size={40} color="#d1d5db" />
+          <Text>Không tìm thấy "{query}"</Text>
+        </div>
       ) : (
-        <CategoryTree tree={tree} onDelete={onOpenDelete} onEdit={onOpenEdit} />
+        <CategoryTree
+          tree={filteredTree}
+          onDelete={onOpenDelete}
+          onEdit={onOpenEdit}
+          forceOpen={q ? true : undefined}
+        />
       )}
 
       {/* Form thêm / chỉnh sửa */}

@@ -1,5 +1,12 @@
-import { Link, useLocation } from 'react-router-dom'
-import { IconCategory2, IconPackage, IconRuler } from '@tabler/icons-react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import {
+  IconCategory2,
+  IconLogout,
+  IconPackage,
+  IconRuler,
+} from '@tabler/icons-react'
+import { ActionIcon, Text } from '@mantine/core'
+import { useAuth } from '../../contexts/AuthContext'
 
 const navItems: NavItem[] = [
   { to: '/admin/products', label: 'Sản phẩm', Icon: IconPackage },
@@ -14,6 +21,13 @@ export default function LayoutAdmin({
   icon: Icon,
 }: LayoutAdminProps) {
   const { pathname } = useLocation()
+  const navigate = useNavigate()
+  const { user, signOut } = useAuth()
+
+  async function handleLogout() {
+    await signOut()
+    navigate('/admin/login', { replace: true })
+  }
 
   return (
     <>
@@ -22,6 +36,34 @@ export default function LayoutAdmin({
         <div>
           <div className="site-header__title">{title}</div>
           {subtitle && <div className="site-header__sub">{subtitle}</div>}
+        </div>
+        <div
+          style={{
+            marginLeft: 'auto',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+          }}
+        >
+          {user?.email && (
+            <Text
+              fz="xs"
+              ff="var(--font)"
+              c="rgba(255,255,255,0.85)"
+              visibleFrom="xs"
+            >
+              {user.email}
+            </Text>
+          )}
+          <ActionIcon
+            variant="subtle"
+            color="white"
+            onClick={handleLogout}
+            aria-label="Đăng xuất"
+            styles={{ root: { color: '#fff' } }}
+          >
+            <IconLogout size={20} />
+          </ActionIcon>
         </div>
       </header>
 

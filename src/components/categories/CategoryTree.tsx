@@ -13,12 +13,14 @@ interface NodeProps {
   node: CategoryNode
   onDelete: (category: Category) => void
   onEdit: (category: Category) => void
+  forceOpen?: boolean
 }
 
 interface CategoryTreeProps {
   tree: CategoryNode[]
   onDelete: (category: Category) => void
   onEdit: (category: Category) => void
+  forceOpen?: boolean
 }
 
 // ── Child (level 2) ───────────────────────────────────────────────────────────
@@ -52,8 +54,9 @@ function ChildNode({ node, onDelete, onEdit }: NodeProps) {
 
 // ── Root (level 1) ────────────────────────────────────────────────────────────
 
-function RootNode({ node, onDelete, onEdit }: NodeProps) {
-  const [open, setOpen] = useState(false)
+function RootNode({ node, onDelete, onEdit, forceOpen }: NodeProps) {
+  const [internalOpen, setOpen] = useState(false)
+  const open = forceOpen ?? internalOpen
   const hasChildren = (node.children?.length ?? 0) > 0
 
   return (
@@ -62,7 +65,10 @@ function RootNode({ node, onDelete, onEdit }: NodeProps) {
         <div className="cat-node__left">
           <button
             className="cat-toggle cat-toggle--root"
-            onClick={() => setOpen((o) => !o)}
+            onClick={() => {
+              if (forceOpen !== undefined) return
+              setOpen((o) => !o)
+            }}
             aria-label={open ? 'Thu gọn' : 'Mở rộng'}
           >
             {open ? (
@@ -127,6 +133,7 @@ export default function CategoryTree({
   tree,
   onDelete,
   onEdit,
+  forceOpen,
 }: CategoryTreeProps) {
   if (!tree?.length) {
     return (
@@ -145,6 +152,7 @@ export default function CategoryTree({
           node={root}
           onDelete={onDelete}
           onEdit={onEdit}
+          forceOpen={forceOpen}
         />
       ))}
     </div>

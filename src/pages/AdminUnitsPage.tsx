@@ -1,6 +1,14 @@
 import { useState } from 'react'
-import { Group, Text, Loader, Center, Modal, Button } from '@mantine/core'
-import { IconRuler, IconPlus } from '@tabler/icons-react'
+import {
+  Group,
+  Text,
+  Loader,
+  Center,
+  Modal,
+  Button,
+  TextInput,
+} from '@mantine/core'
+import { IconRuler, IconPlus, IconSearch } from '@tabler/icons-react'
 import { notifications } from '@mantine/notifications'
 import UnitList from '../components/units/UnitList'
 import UnitForm from '../components/units/UnitForm'
@@ -11,7 +19,12 @@ import LayoutAdmin from '../components/shared/LayoutAdmin'
 export default function AdminUnitsPage() {
   const { units, loading, addUnit, updateUnit, deleteUnit } = useUnits()
 
+  const [query, setQuery] = useState('')
   const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null)
+
+  const filteredUnits = query.trim()
+    ? units.filter((u) => u.name.toLowerCase().includes(query.toLowerCase()))
+    : units
 
   const [modalForm, { open: openModalForm, close: closeModalForm }] =
     useDisclosure(false)
@@ -104,10 +117,20 @@ export default function AdminUnitsPage() {
       subtitle="Quản lý đơn vị tính sản phẩm"
       icon={IconRuler}
     >
-      <Group justify="space-between" mb={12}>
-        <Text fw={800} fz="sm" ff="var(--font)">
-          Danh sách đơn vị
-        </Text>
+      <Group gap={8} mb={12}>
+        <TextInput
+          placeholder="Tìm đơn vị..."
+          leftSection={<IconSearch size={15} />}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          style={{ flex: 1 }}
+          styles={{
+            input: {
+              fontFamily: 'var(--font)',
+              borderColor: 'var(--border)',
+            },
+          }}
+        />
         <button
           className="add-btn"
           onClick={onOpenAdd}
@@ -117,12 +140,35 @@ export default function AdminUnitsPage() {
         </button>
       </Group>
 
+      {!loading && (
+        <div className="product-stats">
+          <span>Tổng đơn vị:</span>
+          <span className="stat-value">{units.length}</span>
+          {filteredUnits.length !== units.length && (
+            <span className="stat-filtered">
+              · Hiển thị: {filteredUnits.length}
+            </span>
+          )}
+        </div>
+      )}
+
       {loading ? (
         <Center py={40}>
-          <Loader color="green" size="sm" />
+          <Loader color="teal" size="sm" />
         </Center>
+      ) : filteredUnits.length === 0 ? (
+        <div className="empty-state">
+          <IconRuler size={40} color="#d1d5db" />
+          <Text>
+            {query ? `Không tìm thấy "${query}"` : 'Chưa có đơn vị nào'}
+          </Text>
+        </div>
       ) : (
-        <UnitList units={units} onDelete={onOpenDelete} onEdit={onOpenEdit} />
+        <UnitList
+          units={filteredUnits}
+          onDelete={onOpenDelete}
+          onEdit={onOpenEdit}
+        />
       )}
 
       {/* Form thêm / chỉnh sửa */}
