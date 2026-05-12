@@ -229,16 +229,14 @@ export default function AdminProductsPage() {
           <span>Tổng sản phẩm:</span>
           <span className="stat-value">{products.length}</span>
           {filtered.length !== products.length && (
-            <span className="stat-filtered">
-              · Hiển thị: {filtered.length}
-            </span>
+            <span className="stat-filtered">· Hiển thị: {filtered.length}</span>
           )}
         </div>
       )}
 
       {loading ? (
         <Center py={40}>
-          <Loader color="green" size="sm" />
+          <Loader color="teal" size="sm" />
         </Center>
       ) : filtered.length === 0 ? (
         <div className="empty-state">

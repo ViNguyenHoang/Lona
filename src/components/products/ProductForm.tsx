@@ -445,7 +445,7 @@ export default function ProductForm({
                 >
                   Danh mục
                   {form.values.categoryIds.length > 0 && (
-                    <Badge ml={6} size="xs" variant="filled" color="green">
+                    <Badge ml={6} size="xs" variant="filled" color="teal">
                       {form.values.categoryIds.length}
                     </Badge>
                   )}
@@ -478,12 +478,12 @@ export default function ProductForm({
                     <Badge
                       key={a}
                       variant="light"
-                      color="green"
+                      color="teal"
                       rightSection={
                         <ActionIcon
                           size="xs"
                           variant="transparent"
-                          color="green"
+                          color="teal"
                           onClick={() => removeAlias(a)}
                         >
                           <IconX size={10} />
@@ -513,7 +513,7 @@ export default function ProductForm({
                 <Button
                   type="button"
                   variant="light"
-                  color="green"
+                  color="teal"
                   onClick={addAlias}
                   styles={{
                     root: { fontFamily: 'var(--font)', fontWeight: 700 },

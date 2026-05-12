@@ -125,7 +125,7 @@ export default function ProductsPage() {
 
         {loading ? (
           <Center py={40}>
-            <Loader color="green" size="sm" />
+            <Loader color="teal" size="sm" />
           </Center>
         ) : filtered.length === 0 ? (
           <div className="empty-state">
