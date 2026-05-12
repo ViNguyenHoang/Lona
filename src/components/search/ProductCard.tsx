@@ -43,7 +43,7 @@ function toDisplay(p: Product | SearchProduct): DisplayData {
     return {
       id: p.id,
       name: p.name,
-      unitName: p.units?.name ?? null,
+      unitName: p.unit?.name ?? null,
       price: p.price,
       imageUrl: p.image_url,
       aliases: p.product_aliases,
