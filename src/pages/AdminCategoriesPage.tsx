@@ -8,7 +8,7 @@ import {
   Button,
   TextInput,
 } from '@mantine/core'
-import { IconCategory2, IconPlus, IconSearch, IconFolder } from '@tabler/icons-react'
+import { IconPlus, IconSearch, IconFolder } from '@tabler/icons-react'
 import { notifications } from '@mantine/notifications'
 import CategoryTree from '../components/categories/CategoryTree'
 import CategoryForm from '../components/categories/CategoryForm'
@@ -149,11 +149,7 @@ export default function AdminCategoriesPage() {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <LayoutAdmin
-      title="Danh Mục"
-      subtitle="Quản lý danh mục sản phẩm"
-      icon={IconCategory2}
-    >
+    <LayoutAdmin title="Danh Mục" subtitle="Quản lý danh mục sản phẩm">
       <Group gap={8} mb={12}>
         <TextInput
           placeholder="Tìm danh mục..."

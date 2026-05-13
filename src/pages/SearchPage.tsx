@@ -1,4 +1,3 @@
-import { IconMicrophone } from '@tabler/icons-react'
 import Layout from '../components/shared/Layout.js'
 import SearchBar from '../components/search/SearchBar.js'
 import SearchResult from '../components/search/SearchResult.js'
@@ -8,11 +7,7 @@ export default function SearchPage() {
   const { results, loading, query, parsedName, search } = useSearch()
 
   return (
-    <Layout
-      title="Shop Tạp Hóa"
-      subtitle="Tìm sản phẩm bằng giọng nói"
-      icon={IconMicrophone}
-    >
+    <Layout title="Shop Tạp Hóa" subtitle="Tìm sản phẩm bằng giọng nói">
       <div className="search-page">
         <div className="search-hero">
           <div className="search-hero__title">Hỏi giá sản phẩm</div>

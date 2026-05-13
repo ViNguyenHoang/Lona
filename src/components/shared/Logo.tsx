@@ -1,0 +1,37 @@
+interface LogoProps {
+  size?: number
+  className?: string
+}
+
+export default function Logo({ size = 28, className }: LogoProps) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 32 32"
+      width={size}
+      height={size}
+      className={className}
+      aria-label="Lona"
+    >
+      <defs>
+        <linearGradient id="lona-logo-bg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#10b981" />
+          <stop offset="100%" stopColor="#047857" />
+        </linearGradient>
+      </defs>
+      <rect width="32" height="32" rx="7" fill="url(#lona-logo-bg)" />
+      <path d="M5.5 14 L8.5 8 H23.5 L26.5 14 Z" fill="#fff" />
+      <circle cx="8" cy="14" r="2" fill="#fff" />
+      <circle cx="12.5" cy="14" r="2" fill="#fff" />
+      <circle cx="16" cy="14" r="2" fill="#fff" />
+      <circle cx="19.5" cy="14" r="2" fill="#fff" />
+      <circle cx="24" cy="14" r="2" fill="#fff" />
+      <rect x="11.7" y="8" width="0.9" height="6" fill="#059669" opacity="0.5" />
+      <rect x="15.55" y="8" width="0.9" height="6" fill="#059669" opacity="0.5" />
+      <rect x="19.4" y="8" width="0.9" height="6" fill="#059669" opacity="0.5" />
+      <rect x="7" y="18.5" width="18" height="8" rx="1.5" fill="#fff" />
+      <rect x="9.5" y="20" width="3.8" height="3" rx="0.4" fill="#047857" />
+      <rect x="15.5" y="20" width="4.5" height="6.5" rx="0.4" fill="#047857" />
+    </svg>
+  )
+}

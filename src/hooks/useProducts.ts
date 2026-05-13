@@ -259,6 +259,51 @@ export function useProducts(options: UseProductsOptions = {}) {
     setProducts((prev) => prev.filter((p) => p.id !== id))
   }
 
+  async function bulkDeleteProducts(
+    ids: string[],
+  ): Promise<{ deleted: number }> {
+    if (ids.length === 0) return { deleted: 0 }
+
+    const publicIds = products
+      .filter((p) => ids.includes(p.id) && p.image_public_id)
+      .map((p) => p.image_public_id as string)
+
+    const { error: dErr } = await supabase
+      .from('products')
+      .delete()
+      .in('id', ids)
+    if (dErr) throw dErr
+
+    if (publicIds.length > 0) {
+      await Promise.allSettled(publicIds.map((pid) => deleteImage(pid)))
+    }
+
+    setProducts((prev) => prev.filter((p) => !ids.includes(p.id)))
+    return { deleted: ids.length }
+  }
+
+  async function bulkUpdatePrices(
+    updates: { id: string; price: number }[],
+  ): Promise<{ updated: number }> {
+    if (updates.length === 0) return { updated: 0 }
+
+    const results = await Promise.all(
+      updates.map((u) =>
+        supabase.from('products').update({ price: u.price }).eq('id', u.id),
+      ),
+    )
+    const firstError = results.find((r) => r.error)?.error
+    if (firstError) throw firstError
+
+    const priceMap = new Map(updates.map((u) => [u.id, u.price]))
+    setProducts((prev) =>
+      prev.map((p) =>
+        priceMap.has(p.id) ? { ...p, price: priceMap.get(p.id)! } : p,
+      ),
+    )
+    return { updated: updates.length }
+  }
+
   return {
     products,
     loading,
@@ -268,6 +313,8 @@ export function useProducts(options: UseProductsOptions = {}) {
     deleteProduct,
     deleteAllProducts,
     bulkAddProducts,
+    bulkDeleteProducts,
+    bulkUpdatePrices,
     refetch: fetchProducts,
   }
 }

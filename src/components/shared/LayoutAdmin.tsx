@@ -1,5 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
+  IconBuildingStore,
   IconCategory2,
   IconLogout,
   IconPackage,
@@ -7,19 +8,16 @@ import {
 } from '@tabler/icons-react'
 import { ActionIcon, Text } from '@mantine/core'
 import { useAuth } from '../../contexts/AuthContext'
+import Logo from './Logo'
 
 const navItems: NavItem[] = [
   { to: '/admin/products', label: 'Sản phẩm', Icon: IconPackage },
   { to: '/admin/categories', label: 'Danh Mục', Icon: IconCategory2 },
   { to: '/admin/units', label: 'Đơn vị', Icon: IconRuler },
+  { to: '/', label: 'Cửa hàng', Icon: IconBuildingStore },
 ]
 
-export default function LayoutAdmin({
-  children,
-  title,
-  subtitle,
-  icon: Icon,
-}: LayoutAdminProps) {
+export default function LayoutAdmin({ children, title, subtitle }: LayoutProps) {
   const { pathname } = useLocation()
   const navigate = useNavigate()
   const { user, signOut } = useAuth()
@@ -32,7 +30,7 @@ export default function LayoutAdmin({
   return (
     <>
       <header className="site-header">
-        {Icon && <Icon size={22} className="site-header__logo" />}
+        <Logo size={32} className="site-header__logo" />
         <div>
           <div className="site-header__title">{title}</div>
           {subtitle && <div className="site-header__sub">{subtitle}</div>}

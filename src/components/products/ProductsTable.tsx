@@ -1,15 +1,15 @@
-import { Table, ActionIcon, Group, Tooltip } from '@mantine/core'
+import { Table, ActionIcon, Group, Tooltip, Checkbox } from '@mantine/core'
 import { IconPencil, IconTrash, IconPhoto } from '@tabler/icons-react'
+import { formatVnd } from '../../lib/productFilters'
 
 interface ProductsTableProps {
   products: Product[]
   categories: Category[]
   onEdit: (p: Product) => void
   onDelete: (p: Product) => void
-}
-
-function formatPrice(n: number): string {
-  return new Intl.NumberFormat('vi-VN').format(n) + 'đ'
+  selectedIds: Set<string>
+  onToggleOne: (id: string) => void
+  onToggleAll: () => void
 }
 
 export default function ProductsTable({
@@ -17,8 +17,16 @@ export default function ProductsTable({
   categories,
   onEdit,
   onDelete,
+  selectedIds,
+  onToggleOne,
+  onToggleAll,
 }: ProductsTableProps) {
   const catMap = new Map(categories.map((c) => [c.id, c.name]))
+
+  const allSelected =
+    products.length > 0 && products.every((p) => selectedIds.has(p.id))
+  const someSelected =
+    !allSelected && products.some((p) => selectedIds.has(p.id))
 
   return (
     <div className="product-table-wrap">
@@ -43,6 +51,14 @@ export default function ProductsTable({
       >
         <Table.Thead>
           <Table.Tr>
+            <Table.Th style={{ width: 40 }}>
+              <Checkbox
+                checked={allSelected}
+                indeterminate={someSelected}
+                onChange={onToggleAll}
+                aria-label="Chọn tất cả"
+              />
+            </Table.Th>
             <Table.Th style={{ width: 60 }}>Ảnh</Table.Th>
             <Table.Th>Tên sản phẩm</Table.Th>
             <Table.Th style={{ width: 100 }}>Đơn vị</Table.Th>
@@ -60,8 +76,20 @@ export default function ProductsTable({
               .map((pc) => catMap.get(pc.category_id))
               .filter(Boolean)
               .join(', ')
+            const isSelected = selectedIds.has(p.id)
             return (
-              <Table.Tr key={p.id}>
+              <Table.Tr
+                key={p.id}
+                data-selected={isSelected || undefined}
+                className={isSelected ? 'row-selected' : undefined}
+              >
+                <Table.Td>
+                  <Checkbox
+                    checked={isSelected}
+                    onChange={() => onToggleOne(p.id)}
+                    aria-label={`Chọn ${p.name}`}
+                  />
+                </Table.Td>
                 <Table.Td>
                   <div className="table-thumb">
                     {p.image_url ? (
@@ -101,7 +129,7 @@ export default function ProductsTable({
                     whiteSpace: 'nowrap',
                   }}
                 >
-                  {formatPrice(p.price)}
+                  {formatVnd(p.price)}
                 </Table.Td>
                 <Table.Td>
                   <Group gap={6} justify="center" wrap="nowrap">

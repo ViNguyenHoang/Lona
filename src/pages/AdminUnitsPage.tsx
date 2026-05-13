@@ -112,11 +112,7 @@ export default function AdminUnitsPage() {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <LayoutAdmin
-      title="Đơn Vị Tính"
-      subtitle="Quản lý đơn vị tính sản phẩm"
-      icon={IconRuler}
-    >
+    <LayoutAdmin title="Đơn Vị Tính" subtitle="Quản lý đơn vị tính sản phẩm">
       <Group gap={8} mb={12}>
         <TextInput
           placeholder="Tìm đơn vị..."

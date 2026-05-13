@@ -1,5 +1,6 @@
 import { IconPhoto, IconTrash, IconPencil } from '@tabler/icons-react'
 import type { SearchProduct } from '../../hooks/useSearch'
+import { formatVnd } from '../../lib/productFilters'
 
 interface AdminCardProps {
   product: Product
@@ -16,10 +17,6 @@ interface BrowseCardProps {
 }
 
 type ProductCardProps = AdminCardProps | BrowseCardProps
-
-function formatPrice(price: number): string {
-  return new Intl.NumberFormat('vi-VN').format(price) + 'đ'
-}
 
 // ── Type guards ───────────────────────────────────────────────────────────────
 
@@ -87,7 +84,7 @@ export default function ProductCard({
 
         {d.unitName && <div className="card__unit">{d.unitName}</div>}
 
-        <div className="card__price">{formatPrice(d.price)}</div>
+        <div className="card__price">{formatVnd(d.price)}</div>
 
         {d.aliases.length > 0 && (
           <div className="card__aliases">

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   TextInput,
   Button,
@@ -7,9 +7,9 @@ import {
   Modal,
   Loader,
   Center,
+  Pagination,
 } from '@mantine/core'
 import {
-  IconPackage,
   IconSearch,
   IconPlus,
   IconCategory,
@@ -21,6 +21,8 @@ import ProductCard from '../components/search/ProductCard'
 import ProductForm from '../components/products/ProductForm'
 import ProductsTable from '../components/products/ProductsTable'
 import ImportExportMenu from '../components/products/ImportExportMenu'
+import BulkActionsBar from '../components/products/BulkActionsBar'
+import BulkPriceModal from '../components/products/BulkPriceModal'
 import {
   ProductFilterButton,
   ProductFilterPanel,
@@ -49,6 +51,8 @@ export default function AdminProductsPage() {
     deleteProduct,
     deleteAllProducts,
     bulkAddProducts,
+    bulkDeleteProducts,
+    bulkUpdatePrices,
   } = useProducts()
   const { categories } = useCategories()
   const { units } = useUnits()
@@ -68,6 +72,11 @@ export default function AdminProductsPage() {
     useDisclosure(false)
   const [isDeleting, setDeleting] = useState(false)
 
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [modalBulkDelete, bulkDeleteModal] = useDisclosure(false)
+  const [modalBulkPrice, bulkPriceModal] = useDisclosure(false)
+  const [isBulkDeleting, setBulkDeleting] = useState(false)
+
   const byCategory = applyCategoryFilter(products, categoryId)
   const byFilters = applyProductFilters(byCategory, filters)
   const sorted = applySortOrder(byFilters, sort)
@@ -78,6 +87,19 @@ export default function AdminProductsPage() {
   const activeCategory = categoryId
     ? categories.find((c) => c.id === categoryId)
     : null
+
+  // ── Pagination ────────────────────────────────────────────────────────────
+  const PAGE_SIZE = 20
+  const [page, setPage] = useState(1)
+
+  useEffect(() => {
+    setPage(1)
+  }, [query, filters, sort, categoryId])
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const currentPage = Math.min(page, totalPages)
+  const pageStart = (currentPage - 1) * PAGE_SIZE
+  const pageItems = filtered.slice(pageStart, pageStart + PAGE_SIZE)
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
@@ -148,14 +170,81 @@ export default function AdminProductsPage() {
     }
   }
 
+  // ── Selection ─────────────────────────────────────────────────────────────
+
+  function toggleOne(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  function toggleAllVisible() {
+    setSelectedIds((prev) => {
+      const allVisibleSelected =
+        pageItems.length > 0 && pageItems.every((p) => prev.has(p.id))
+      const next = new Set(prev)
+      if (allVisibleSelected) {
+        pageItems.forEach((p) => next.delete(p.id))
+      } else {
+        pageItems.forEach((p) => next.add(p.id))
+      }
+      return next
+    })
+  }
+
+  function clearSelection() {
+    setSelectedIds(new Set())
+  }
+
+  async function handleBulkDelete(): Promise<void> {
+    if (selectedIds.size === 0) return
+    setBulkDeleting(true)
+    try {
+      const { deleted } = await bulkDeleteProducts(Array.from(selectedIds))
+      notifications.show({
+        message: `Đã xoá ${deleted} sản phẩm`,
+        color: 'green',
+      })
+      clearSelection()
+      bulkDeleteModal.close()
+    } catch (err) {
+      notifications.show({
+        message:
+          'Lỗi: ' + (err instanceof Error ? err.message : 'Không xác định'),
+        color: 'red',
+      })
+    } finally {
+      setBulkDeleting(false)
+    }
+  }
+
+  async function handleBulkUpdatePrices(
+    updates: { id: string; price: number }[],
+  ): Promise<void> {
+    try {
+      const { updated } = await bulkUpdatePrices(updates)
+      notifications.show({
+        message: `Đã cập nhật giá ${updated} sản phẩm`,
+        color: 'green',
+      })
+      clearSelection()
+    } catch (err) {
+      notifications.show({
+        message:
+          'Lỗi: ' + (err instanceof Error ? err.message : 'Không xác định'),
+        color: 'red',
+      })
+      throw err
+    }
+  }
+
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <LayoutAdmin
-      title="Quản Lý Sản Phẩm"
-      subtitle="Thêm, sửa, xoá sản phẩm"
-      icon={IconPackage}
-    >
+    <LayoutAdmin title="Quản Lý Sản Phẩm" subtitle="Thêm, sửa, xoá sản phẩm">
       <Group gap={8} mb={12}>
         <TextInput
           placeholder="Tìm tên sản phẩm..."
@@ -250,7 +339,7 @@ export default function AdminProductsPage() {
         <>
           <div className="admin-grid-wrap">
             <div className="product-grid">
-              {filtered.map((p) => (
+              {pageItems.map((p) => (
                 <ProductCard
                   key={p.id}
                   product={p}
@@ -263,14 +352,39 @@ export default function AdminProductsPage() {
           </div>
           <div className="admin-table-wrap">
             <ProductsTable
-              products={filtered}
+              products={pageItems}
               categories={categories}
               onEdit={onOpenEdit}
               onDelete={onOpenDelete}
+              selectedIds={selectedIds}
+              onToggleOne={toggleOne}
+              onToggleAll={toggleAllVisible}
             />
           </div>
+          {totalPages > 1 && (
+            <div className="pagination-wrap">
+              <Pagination
+                total={totalPages}
+                value={currentPage}
+                onChange={setPage}
+                size="sm"
+                color="teal"
+                radius="xl"
+                withEdges
+                siblings={1}
+                styles={{ control: { fontFamily: 'var(--font)' } }}
+              />
+            </div>
+          )}
         </>
       )}
+
+      <BulkActionsBar
+        count={selectedIds.size}
+        onClear={clearSelection}
+        onEditPrice={bulkPriceModal.open}
+        onDelete={bulkDeleteModal.open}
+      />
 
       <CategoryDrawer
         open={catDrawerOpen}
@@ -326,6 +440,53 @@ export default function AdminProductsPage() {
           </Button>
         </Group>
       </Modal>
+
+      {/* Bulk delete confirm */}
+      <Modal
+        opened={modalBulkDelete}
+        onClose={bulkDeleteModal.close}
+        title={
+          <Text fw={800} fz="md" ff="var(--font)">
+            Xác nhận xoá hàng loạt
+          </Text>
+        }
+        centered
+        styles={{ content: { fontFamily: 'var(--font)', borderRadius: 16 } }}
+      >
+        <Text fz="sm" mb="lg" ff="var(--font)">
+          Xoá <strong>{selectedIds.size}</strong> sản phẩm đã chọn? Hành động
+          này không thể hoàn tác.
+        </Text>
+        <Group gap={8}>
+          <Button
+            variant="default"
+            flex={1}
+            onClick={bulkDeleteModal.close}
+            styles={{ root: { fontFamily: 'var(--font)', fontWeight: 700 } }}
+          >
+            Huỷ
+          </Button>
+          <Button
+            color="red"
+            flex={1}
+            loading={isBulkDeleting}
+            onClick={handleBulkDelete}
+            styles={{ root: { fontFamily: 'var(--font)', fontWeight: 800 } }}
+          >
+            Xoá {selectedIds.size}
+          </Button>
+        </Group>
+      </Modal>
+
+      {/* Bulk price */}
+      <BulkPriceModal
+        open={modalBulkPrice}
+        onClose={bulkPriceModal.close}
+        products={products}
+        selectedIds={selectedIds}
+        onRemove={toggleOne}
+        onSubmit={handleBulkUpdatePrices}
+      />
     </LayoutAdmin>
   )
 }

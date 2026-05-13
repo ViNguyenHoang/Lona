@@ -1,23 +1,24 @@
 import { Link, useLocation } from 'react-router-dom'
-import { IconMicrophone, IconBuildingStore } from '@tabler/icons-react'
+import {
+  IconMicrophone,
+  IconBuildingStore,
+  IconSettings,
+} from '@tabler/icons-react'
+import Logo from './Logo'
 
 const navItems: NavItem[] = [
   { to: '/', label: 'Giọng nói', Icon: IconMicrophone },
   { to: '/products', label: 'Sản phẩm', Icon: IconBuildingStore },
+  { to: '/admin/products', label: 'Quản lý', Icon: IconSettings },
 ]
 
-export default function Layout({
-  children,
-  title,
-  subtitle,
-  icon: Icon,
-}: LayoutProps) {
+export default function Layout({ children, title, subtitle }: LayoutProps) {
   const { pathname } = useLocation()
 
   return (
     <>
       <header className="site-header">
-        {Icon && <Icon size={22} className="site-header__logo" />}
+        <Logo size={32} className="site-header__logo" />
         <div>
           <div className="site-header__title">{title}</div>
           {subtitle && <div className="site-header__sub">{subtitle}</div>}

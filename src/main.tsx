@@ -3,7 +3,6 @@ import { createRoot } from 'react-dom/client'
 import { MantineProvider } from '@mantine/core'
 import { Notifications } from '@mantine/notifications'
 import { BrowserRouter } from 'react-router-dom'
-import './index.css'
 import App from './App.tsx'
 import { AuthProvider } from './contexts/AuthContext'
 

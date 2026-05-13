@@ -1,7 +1,6 @@
-import { useState } from 'react'
-import { TextInput, Loader, Center, Group } from '@mantine/core'
+import { useEffect, useState } from 'react'
+import { TextInput, Loader, Center, Group, Pagination } from '@mantine/core'
 import {
-  IconBuildingStore,
   IconSearch,
   IconLayoutGrid,
   IconCategory,
@@ -52,13 +51,23 @@ export default function ProductsPage() {
     ? categories.find((c) => c.id === categoryId)
     : null
 
-  console.log(products)
+  // ── Pagination ────────────────────────────────────────────────────────────
+  const PAGE_SIZE = 20
+  const [page, setPage] = useState(1)
+
+  useEffect(() => {
+    setPage(1)
+  }, [query, filters, sort, categoryId])
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const currentPage = Math.min(page, totalPages)
+  const pageStart = (currentPage - 1) * PAGE_SIZE
+  const pageItems = filtered.slice(pageStart, pageStart + PAGE_SIZE)
 
   return (
     <Layout
       title="Danh Sách Sản Phẩm"
       subtitle="Xem giá và tìm kiếm sản phẩm"
-      icon={IconBuildingStore}
     >
       <div className="products-page">
         <Group gap={8} mb={12}>
@@ -134,11 +143,28 @@ export default function ProductsPage() {
             </p>
           </div>
         ) : (
-          <div className="p-grid">
-            {filtered.map((p) => (
-              <ProductCard key={p.id} product={p} mode="browse" />
-            ))}
-          </div>
+          <>
+            <div className="p-grid">
+              {pageItems.map((p) => (
+                <ProductCard key={p.id} product={p} mode="browse" />
+              ))}
+            </div>
+            {totalPages > 1 && (
+              <div className="pagination-wrap">
+                <Pagination
+                  total={totalPages}
+                  value={currentPage}
+                  onChange={setPage}
+                  size="sm"
+                  color="teal"
+                  radius="xl"
+                  withEdges
+                  siblings={1}
+                  styles={{ control: { fontFamily: 'var(--font)' } }}
+                />
+              </div>
+            )}
+          </>
         )}
 
         <CategoryDrawer

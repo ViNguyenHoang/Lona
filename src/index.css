@@ -113,8 +113,9 @@ textarea {
   z-index: 100;
 }
 .site-header__logo {
-  font-size: 1.35rem;
-  line-height: 1;
+  display: block;
+  flex-shrink: 0;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.18));
 }
 .site-header__title {
   font-size: 1rem;

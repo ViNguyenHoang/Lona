@@ -412,3 +412,127 @@
   border-radius: 9999px;
   background: var(--bg);
 }
+
+/* ── Selected row highlight ──────────────────────────────────────── */
+.product-table-wrap tr.row-selected td {
+  background: rgba(20, 184, 166, 0.08) !important;
+}
+
+/* ── Bulk actions bar (sticky bottom) ────────────────────────────── */
+.bulk-actions {
+  position: fixed;
+  left: 50%;
+  bottom: 76px;
+  transform: translateX(-50%);
+  z-index: 50;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  padding: 8px 14px;
+  min-width: 320px;
+  max-width: calc(100vw - 24px);
+  font-family: var(--font);
+}
+
+.bulk-actions__clear {
+  width: 26px;
+  height: 26px;
+  border-radius: 9999px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.bulk-actions__clear:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.06);
+}
+
+@media (max-width: 540px) {
+  .bulk-actions {
+    min-width: 0;
+    width: calc(100vw - 16px);
+  }
+}
+
+/* ── Bulk price modal ─────────────────────────────────────────────── */
+.bulk-price__summary {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding-top: 4px;
+  border-top: 1px dashed var(--border);
+}
+
+.bulk-price__list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bulk-price__item {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--bg);
+}
+
+.bulk-price__item + .bulk-price__item {
+  margin-top: 4px;
+}
+
+.bulk-price__name {
+  font-family: var(--font);
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bulk-price__prices {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font);
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.bulk-price__old {
+  color: var(--text-3);
+  text-decoration: line-through;
+}
+
+.bulk-price__arrow {
+  color: var(--text-3);
+}
+
+.bulk-price__new {
+  font-weight: 800;
+  color: var(--text);
+}
+
+.bulk-price__new--changed {
+  color: #0d9488;
+}
+
+/* ── Pagination ───────────────────────────────────────────────────── */
+.pagination-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+  padding-bottom: 8px;
+}
